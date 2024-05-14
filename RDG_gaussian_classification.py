@@ -341,3 +341,138 @@ print(atts)
 
 print(seps)
 print(nonseps)"""
+
+
+
+
+
+def RDG_separate(f,x,means,cov,mini,maxi,e,X):
+	seps = []
+	nonseps = []
+	#xll = [dvs[0][0],dvs[1][2],dvs[2][2],dvs[3][2]]
+	#yll = f(xll)
+	features = list(np.arange(len(x)))
+	X1 = []
+	X2 = []
+	X1.append(features[0])
+	X2 = features[1:]
+	comparison = X2
+	while len(X2) != 0:
+		X1_star = interact(f,X1,X2,x,means,cov,mini,maxi,e,X)
+		
+		if X1_star == X1:
+			if len(X1) == 1:
+				seps.append(X1)
+
+			else:
+				nonseps.append(X1)
+
+			X1 = []
+			X1_star = []
+			X1.append(X2[0])	
+			X2.pop(0)
+
+			tick = 0
+			if len(X2) == 0:
+				if len(X1) == 1:
+					for u in nonseps:
+						if X1[0] in u:
+							tick = 1
+							break
+					if tick == 0:
+						seps.append(X1)
+
+		
+		else:
+			X1 = X1_star
+			for i in X1:
+				if i in X2:
+					X2.remove(i)
+					#continue
+			if len(X2) == 0:
+
+				#if len(X1) == len(features):
+
+				nonseps.append(X1)
+	return seps,nonseps
+
+
+
+
+
+def atts_separate(f,x,means,cov,mini,maxi,e,X,seps,nonseps):
+	features = list(np.arange(len(x)))
+	atts = {}
+	temp_bounds = {}
+
+	f_expected = f(np.asarray(means).reshape(1,-1))[0][0]
+
+	if len(seps) > 0:
+		for var in seps:
+				S = []
+				barS = []
+				for i in features:
+					if (i in var):
+						S.append(i)
+					else:
+						barS.append(i)
+
+				S_value  = x[S]
+				barS = np.asarray(barS)
+				expected_S = (means[barS.reshape(barS.shape[0],1)] + (cov[barS.reshape(barS.shape[0],1),S]*cov[S,S])*(S_value-means[S]).reshape(len(S),1).T)[:,0]
+
+				for i,j in zip(S,range(0,len(S))):
+					temp_bounds[i] = S_value[j]
+				for i,j in zip(barS,range(0,len(barS))):
+					temp_bounds[i] = expected_S[j]
+
+				temp = []
+				for i in features:
+					temp.append(temp_bounds[i])
+				
+				atts[tuple(var)] = f(np.asarray(temp).reshape(1,-1))[0][0] - np.mean(f(X))
+
+	print("here")
+	for var in nonseps:
+		S = []
+		barS = []
+		for i in features:
+			if (i in var):
+				S.append(i)
+			else:
+				barS.append(i)
+
+		S_value  = x[S]
+
+
+		if len(S) > 0 and len(barS) > 0:
+			print("in here")
+
+			barS = np.asarray(barS)
+			S = np.asarray(S)
+			S_value = np.asarray(S_value)
+			expected_S = (means[barS.reshape(barS.shape[0],1)] + (cov[barS.reshape(barS.shape[0],1),S]*cov[S,S])*(S_value-means[S]).reshape(len(S),1).T)[:,0]
+
+			for i,j in zip(S,range(0,len(S))):
+				temp_bounds[i] = S_value[j]
+			for i,j in zip(barS,range(0,len(barS))):
+				temp_bounds[i] = expected_S[j]
+
+			print()
+			temp = []
+			for i in features:
+				temp.append(temp_bounds[i])
+
+			atts[tuple(var)] = f(np.asarray(temp).reshape(1,-1))[0][0] - np.mean(f(X))
+
+		else:
+			if len(barS) > 0:
+				atts[str(var)] = np.mean(f(X))[0][0]
+			elif len(S) > 0:
+				atts[tuple(var)] = f(np.asarray(x).reshape(1,-1))[0][0] - np.mean(f(X))
+
+		
+	return atts
+
+
+

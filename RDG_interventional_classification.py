@@ -21,7 +21,7 @@ def interact(f,X1,X2,x,z,mini,maxi,e):
 	temp_bounds = {}
 	features = list(np.arange(len(x)))
 	tick = 0
-	for p in range(0,5):
+	for p in range(0,1):
 		ref = [random.uniform(i,j) for i,j in zip(mini,maxi)]
 		sample = [random.uniform(i,j) for i,j in zip(mini,maxi)]
 		for i in features:
@@ -207,3 +207,102 @@ def RDG(f,x,z,mini,maxi,e):
 	
 	return atts, seps, nonseps
 
+
+
+def RDG_separate(f,x,z,mini,maxi,e):
+	seps = []
+	nonseps = []
+	
+	#xll = [dvs[0][0],dvs[1][2],dvs[2][2],dvs[3][2]]
+	#yll = f(xll)
+	features = list(np.arange(len(x)))
+	X1 = []
+	X2 = []
+	X1.append(features[0])
+	X2 = features[1:]
+	comparison = X2
+	while len(X2) != 0:
+		X1_star = interact(f,X1,X2,x,z,mini,maxi,e)
+		
+		if X1_star == X1:
+			if len(X1) == 1:
+				seps.append(X1)
+
+			else:
+				nonseps.append(X1)
+
+			X1 = []
+			X1_star = []
+			X1.append(X2[0])
+			X2.pop(0)
+			comparison = list(np.arange(len(x)))
+	
+			for i in X1:
+				comparison.remove(i)
+
+			tick = 0
+			if len(X2) == 0:
+				if len(X1) == 1:
+					for u in nonseps:
+						if X1[0] in u:
+							tick = 1
+							break
+					if tick == 0:
+						seps.append(X1)
+
+		
+		else:
+			X1 = X1_star
+			for i in X1:
+				if i in X2:
+					X2.remove(i)
+					#continue
+			#if len(X2) == 0:
+
+				#if len(X1) == len(features):
+
+				#nonseps.append(X1)
+		
+	return seps,nonseps
+	
+def atts_separate(f,x,z,mini,maxi,e,seps,nonseps):
+	features = list(np.arange(len(x)))
+	#seps.append(X1)
+	temp_bounds = {}
+	for i in np.arange(len(x)):
+		temp_bounds[i] = 0
+
+
+	atts = {}
+	temp_bounds = {}
+
+	
+	for var in seps:
+
+		for i in features:
+			temp_bounds[i] = z[i]
+		for i in var:
+			temp_bounds[i] = x[i]
+
+		temp = []
+		for i in features:
+			temp.append(temp_bounds[i])
+
+		atts[tuple(var)] = f(np.asarray(temp).reshape(1,-1))[0][0] - f(np.asarray(z).reshape(1,-1))[0][0]
+
+	for var in nonseps:
+		
+
+		for i in features:
+			temp_bounds[i] = z[i]
+		for i in var:
+			temp_bounds[i] = x[i]
+
+		temp = []
+		for i in features:
+			temp.append(temp_bounds[i])
+
+		atts[tuple(var)] = f(np.asarray(temp).reshape(1,-1))[0][0] - f(np.asarray(z).reshape(1,-1))[0][0]
+
+	
+	return atts

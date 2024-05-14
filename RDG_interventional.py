@@ -21,7 +21,7 @@ def interact(f,X1,X2,x,z,mini,maxi,e):
 	temp_bounds = {}
 	features = list(np.arange(len(x)))
 	tick = 0
-	for p in range(0,1):
+	for p in range(0,10):
 		ref = [random.uniform(i,j) for i,j in zip(mini,maxi)]
 		sample = [random.uniform(i,j) for i,j in zip(mini,maxi)]
 		for i in features:

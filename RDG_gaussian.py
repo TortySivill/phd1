@@ -276,7 +276,6 @@ def RDG(f,x,means,cov,mini,maxi,e,X):
 
 
 		if len(S) > 0 and len(barS) > 0:
-			print("in here")
 
 			barS = np.asarray(barS)
 			S = np.asarray(S)
@@ -288,7 +287,6 @@ def RDG(f,x,means,cov,mini,maxi,e,X):
 			for i,j in zip(barS,range(0,len(barS))):
 				temp_bounds[i] = expected_S[j]
 
-			print()
 			temp = []
 			for i in features:
 				temp.append(temp_bounds[i])
